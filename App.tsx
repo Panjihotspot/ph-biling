@@ -11,7 +11,6 @@ import {
   ShieldCheck, 
   User as UserIcon, 
   LogOut,
-  Layers,
   Sun,
   Moon,
   Server,
@@ -19,19 +18,19 @@ import {
   ChevronRight,
   Menu
 } from 'lucide-react';
-import { UserRole, CustomerStatus, PaymentStatus, Customer, Invoice, Router, SystemLog, InternetPackage, CompanyConfig, SystemUser } from './types';
-import { MOCK_CUSTOMERS, MOCK_INVOICES, MOCK_ROUTERS, MOCK_LOGS, MOCK_PACKAGES, MOCK_COMPANY_CONFIG, MOCK_SYSTEM_USERS } from './constants';
-import Dashboard from './components/Dashboard';
-import CustomerManagement from './components/CustomerManagement';
-import BillingModule from './components/BillingModule';
-import WhatsAppConfig from './components/WhatsAppConfig';
-import Settings from './components/Settings';
-import PackageManagement from './components/PackageManagement';
-import UserManagement from './components/UserManagement';
-import UserProfile from './components/UserProfile';
-import Login from './components/Login';
-import PaymentCheckout from './components/PaymentCheckout';
-import MikrotikConfig from './components/MikrotikConfig';
+import { UserRole, CustomerStatus, PaymentStatus, Customer, Invoice, Router, SystemLog, InternetPackage, CompanyConfig, SystemUser } from './types.ts';
+import { MOCK_CUSTOMERS, MOCK_INVOICES, MOCK_ROUTERS, MOCK_LOGS, MOCK_PACKAGES, MOCK_COMPANY_CONFIG, MOCK_SYSTEM_USERS } from './constants.ts';
+import Dashboard from './components/Dashboard.tsx';
+import CustomerManagement from './components/CustomerManagement.tsx';
+import BillingModule from './components/BillingModule.tsx';
+import WhatsAppConfig from './components/WhatsAppConfig.tsx';
+import Settings from './components/Settings.tsx';
+import PackageManagement from './components/PackageManagement.tsx';
+import UserManagement from './components/UserManagement.tsx';
+import UserProfile from './components/UserProfile.tsx';
+import Login from './components/Login.tsx';
+import PaymentCheckout from './components/PaymentCheckout.tsx';
+import MikrotikConfig from './components/MikrotikConfig.tsx';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -40,10 +39,9 @@ const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<SystemUser | null>(null);
   const [viewingCheckoutInvoice, setViewingCheckoutInvoice] = useState<Invoice | null>(null);
   
-  // Sidebar states
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile drawer
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Desktop compact mode
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true); // Desktop visibility toggle
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window !== 'undefined') {
@@ -76,14 +74,6 @@ const App: React.FC = () => {
     }
     localStorage.setItem('app-theme', theme);
   }, [theme]);
-
-  useEffect(() => {
-    document.title = `${companyConfig.name} - System`;
-  }, [companyConfig.name]);
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
-  };
 
   const accessibleTabs = role === UserRole.ADMIN 
     ? ['dashboard', 'packages', 'customers', 'billing', 'whatsapp', 'infrastructure', 'users', 'profile', 'settings']
@@ -138,30 +128,26 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300 relative overflow-x-hidden">
-      
-      {/* MOBILE DRAWER OVERLAY */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm md:hidden animate-in fade-in duration-300"
+          className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm md:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
-      {/* SIDEBAR (Desktop: Collapsible, Mobile: Drawer) */}
       <aside className={`
         fixed inset-y-0 left-0 z-[110] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col shadow-2xl transition-all duration-300
         ${isSidebarOpen ? 'translate-x-0 w-72' : '-translate-x-full md:translate-x-0'}
         ${isSidebarCollapsed ? 'md:w-24' : 'md:w-72'}
         ${!isSidebarVisible ? 'md:-translate-x-full' : 'md:translate-x-0'}
       `}>
-        {/* Sidebar Header */}
         <div className="p-6 h-24 flex items-center justify-between">
           <div className={`flex items-center space-x-3 overflow-hidden ${isSidebarCollapsed && 'md:justify-center md:space-x-0 w-full'}`}>
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg shrink-0">
               {companyConfig.logoUrl ? <img src={companyConfig.logoUrl} className="w-full h-full object-contain p-1.5" /> : companyConfig.name.substring(0, 1)}
             </div>
             {!isSidebarCollapsed && (
-              <h1 className="text-lg font-black tracking-tighter truncate uppercase text-slate-800 dark:text-slate-100 animate-in fade-in duration-500">
+              <h1 className="text-lg font-black tracking-tighter truncate uppercase text-slate-800 dark:text-slate-100">
                 {companyConfig.name}
               </h1>
             )}
@@ -171,31 +157,24 @@ const App: React.FC = () => {
           </button>
         </div>
 
-        {/* Navigation Items */}
         <nav className="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
-          <NavItem id="dashboard" icon={LayoutDashboard} label="Dashboard" activeTab={activeTab} setActiveTab={(id) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
-          <NavItem id="packages" icon={Globe} label="Paket Internet" activeTab={activeTab} setActiveTab={(id) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
-          <NavItem id="customers" icon={Users} label="Pelanggan" activeTab={activeTab} setActiveTab={(id) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
-          <NavItem id="billing" icon={CreditCard} label="Penagihan" activeTab={activeTab} setActiveTab={(id) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
-          <NavItem id="infrastructure" icon={Server} label="Infrastruktur" activeTab={activeTab} setActiveTab={(id) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
-          <NavItem id="whatsapp" icon={MessageSquare} label="WhatsApp" activeTab={activeTab} setActiveTab={(id) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
-          <NavItem id="users" icon={ShieldCheck} label="Staff" activeTab={activeTab} setActiveTab={(id) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
-          <NavItem id="profile" icon={UserIcon} label="Profil" activeTab={activeTab} setActiveTab={(id) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
-          <NavItem id="settings" icon={SettingsIcon} label="Sistem" activeTab={activeTab} setActiveTab={(id) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
+          <NavItem id="dashboard" icon={LayoutDashboard} label="Dashboard" activeTab={activeTab} setActiveTab={(id: string) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
+          <NavItem id="packages" icon={Globe} label="Paket Internet" activeTab={activeTab} setActiveTab={(id: string) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
+          <NavItem id="customers" icon={Users} label="Pelanggan" activeTab={activeTab} setActiveTab={(id: string) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
+          <NavItem id="billing" icon={CreditCard} label="Penagihan" activeTab={activeTab} setActiveTab={(id: string) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
+          <NavItem id="infrastructure" icon={Server} label="Infrastruktur" activeTab={activeTab} setActiveTab={(id: string) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
+          <NavItem id="whatsapp" icon={MessageSquare} label="WhatsApp" activeTab={activeTab} setActiveTab={(id: string) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
+          <NavItem id="users" icon={ShieldCheck} label="Staff" activeTab={activeTab} setActiveTab={(id: string) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
+          <NavItem id="profile" icon={UserIcon} label="Profil" activeTab={activeTab} setActiveTab={(id: string) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
+          <NavItem id="settings" icon={SettingsIcon} label="Sistem" activeTab={activeTab} setActiveTab={(id: string) => { setActiveTab(id); setIsSidebarOpen(false); }} accessibleTabs={accessibleTabs} isCollapsed={isSidebarCollapsed} />
         </nav>
 
-        {/* Sidebar Footer */}
         <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
-          <button onClick={toggleTheme} className={`w-full flex items-center bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-all hover:bg-slate-100 dark:hover:bg-slate-750 ${isSidebarCollapsed ? 'p-3 justify-center' : 'px-4 py-3 justify-between'}`}>
+          <button onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')} className={`w-full flex items-center bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-all hover:bg-slate-100 dark:hover:bg-slate-750 ${isSidebarCollapsed ? 'p-3 justify-center' : 'px-4 py-3 justify-between'}`}>
             <div className="flex items-center space-x-2">
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
               {!isSidebarCollapsed && <span className="uppercase tracking-widest">{theme === 'light' ? 'Gelap' : 'Terang'}</span>}
             </div>
-            {!isSidebarCollapsed && (
-              <div className={`w-8 h-4 rounded-full p-0.5 transition-colors ${theme === 'dark' ? 'bg-blue-600' : 'bg-slate-300'}`}>
-                 <div className={`w-3 h-3 bg-white rounded-full transition-transform ${theme === 'dark' ? 'translate-x-4' : 'translate-x-0'}`}></div>
-              </div>
-            )}
           </button>
           
           <button onClick={handleLogout} className={`w-full flex items-center justify-center space-x-2 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all ${isSidebarCollapsed ? 'p-3' : 'py-3'}`}>
@@ -205,20 +184,13 @@ const App: React.FC = () => {
         </div>
       </aside>
 
-      {/* TOP HEADER (Universal) */}
       <header className={`
-        fixed top-0 right-0 z-[90] glass-effect dark:bg-slate-900/80 px-4 sm:px-6 py-4 flex items-center justify-between border-b border-slate-200/50 dark:border-slate-800 transition-all duration-300
+        fixed top-0 right-0 z-[90] glass-effect px-4 sm:px-6 py-4 flex items-center justify-between border-b border-slate-200/50 dark:border-slate-800 transition-all duration-300
         ${isSidebarVisible ? (isSidebarCollapsed ? 'md:left-24' : 'md:left-72') : 'left-0'}
       `}>
         <div className="flex items-center space-x-4">
           <button 
-            onClick={() => {
-              if (window.innerWidth < 768) {
-                setIsSidebarOpen(true);
-              } else {
-                setIsSidebarCollapsed(!isSidebarCollapsed);
-              }
-            }}
+            onClick={() => window.innerWidth < 768 ? setIsSidebarOpen(true) : setIsSidebarCollapsed(!isSidebarCollapsed)}
             className="p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-all active:scale-95"
           >
             <Menu size={20} />
@@ -240,7 +212,6 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* MAIN CONTENT AREA */}
       <main className={`
         min-h-screen transition-all duration-300 pt-24
         ${isSidebarVisible ? (isSidebarCollapsed ? 'md:ml-24' : 'md:ml-72') : 'ml-0'}
@@ -258,7 +229,6 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* VIEWPORT CONTROLLER (Floating Widget for Visibility Toggle on Desktop) */}
       <div className="hidden md:block fixed bottom-6 left-6 z-[120]">
         <button 
           onClick={() => setIsSidebarVisible(!isSidebarVisible)}
@@ -268,7 +238,6 @@ const App: React.FC = () => {
           {isSidebarVisible ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
         </button>
       </div>
-
     </div>
   );
 };
@@ -282,7 +251,7 @@ const NavItem = ({ id, icon: Icon, label, activeTab, setActiveTab, accessibleTab
       onClick={() => setActiveTab(id)} 
       className={`
         w-full flex items-center rounded-2xl transition-all duration-300 group relative
-        ${isActive ? 'bg-blue-600 text-white shadow-xl shadow-blue-200 dark:shadow-none scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400'}
+        ${isActive ? 'bg-blue-600 text-white shadow-xl scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400'}
         ${isCollapsed ? 'p-4 justify-center' : 'px-4 py-3.5 space-x-3'}
       `}
       title={isCollapsed ? label : ''}
@@ -290,7 +259,6 @@ const NavItem = ({ id, icon: Icon, label, activeTab, setActiveTab, accessibleTab
       <Icon size={20} strokeWidth={isActive ? 2.5 : 2} className="shrink-0" />
       {!isCollapsed && <span className="font-bold text-sm tracking-tight truncate">{label}</span>}
       
-      {/* Tooltip for Collapsed Sidebar */}
       {isCollapsed && (
         <div className="absolute left-20 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:left-24 transition-all z-[150] shadow-2xl hidden md:block whitespace-nowrap">
           {label}

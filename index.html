@@ -15,9 +15,24 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Global shim untuk mencegah crash di browser Armbian jika bundler tidak menyediakannya
-        window.process = window.process || { env: { API_KEY: "" } };
+        // Global shim untuk mencegah crash di browser
+        window.process = { env: { API_KEY: "" } };
         
+        // Error Handler untuk diagnosa di layar (Sangat berguna untuk Armbian)
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            const errorBox = document.getElementById('error-display');
+            if (errorBox) {
+                errorBox.style.display = 'block';
+                errorBox.innerHTML += `
+                    <div class="p-3 bg-red-100 border-b border-red-200 text-red-700 text-xs font-mono">
+                        [ERROR] ${msg}<br>
+                        <span class="opacity-50">${url}:${lineNo}</span>
+                    </div>
+                `;
+            }
+            return false;
+        };
+
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -36,15 +51,11 @@
     <style>
         :root {
             --sat: env(safe-area-inset-top);
-            --sar: env(safe-area-inset-right);
             --sab: env(safe-area-inset-bottom);
-            --sal: env(safe-area-inset-left);
         }
         body { 
             font-family: 'Inter', sans-serif; 
             -webkit-tap-highlight-color: transparent;
-            overscroll-behavior-y: none;
-            transition: background-color 0.3s ease;
             padding-top: var(--sat);
             padding-bottom: var(--sab);
         }
@@ -57,60 +68,74 @@
             background: rgba(15, 23, 42, 0.8);
         }
         
-        .custom-scrollbar {
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: thin;
+        /* Loading Spinner */
+        #app-loader {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
         }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
+        .dark #app-loader { background: #0f172a; color: white; }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #334155;
-        }
-
-        @media (max-width: 768px) {
-            .hide-on-mobile { display: none !important; }
-        }
-
-        @media print {
-            @page { size: A4; margin: 10mm; }
-            aside, header, nav, footer, button, .no-print, .fixed, .sticky { display: none !important; }
-            #root, body, html { background: white !important; margin: 0 !important; padding: 0 !important; width: 210mm !important; }
-            main { margin: 0 !important; padding: 0 !important; width: 100% !important; display: block !important; }
-            .printable-area { display: block !important; visibility: visible !important; width: 100% !important; background: white !important; }
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-        }
-        
-        .printable-area { display: none; }
-
-        .page-enter {
-            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 <script type="importmap">
 {
   "imports": {
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.474.0",
     "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
-    "recharts": "https://esm.sh/recharts@^3.6.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "recharts": "https://esm.sh/recharts@2.12.7",
+    "react": "https://esm.sh/react@18.3.1",
+    "react-dom": "https://esm.sh/react-dom@18.3.1",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
     "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3"
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
   }
 }
 </script>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 select-none antialiased overflow-x-hidden">
+    <!-- Diagnosa Error -->
+    <div id="error-display" style="display:none; position:fixed; top:0; left:0; right:0; z-index:10000; max-height:50vh; overflow-y:auto; background:white; border-bottom:4px solid red; box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+        <div class="p-4 bg-red-600 text-white font-bold flex justify-between items-center">
+            <span>Sistem Error (Diagnosa Armbian)</span>
+            <button onclick="location.reload()" class="bg-white/20 px-3 py-1 rounded text-xs">Reload</button>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="app-loader">
+        <div class="spinner"></div>
+        <p class="text-xs font-black uppercase tracking-widest opacity-50">Memulai PH Biling...</p>
+    </div>
+
     <div id="root"></div>
     <script type="module" src="index.tsx"></script>
+    
+    <script>
+        // Hapus loader jika React berhasil mount
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const loader = document.getElementById('app-loader');
+                if (window.reactLoaded && loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.remove(), 500);
+                }
+            }, 1000);
+        });
+    </script>
 </body>
 </html>
