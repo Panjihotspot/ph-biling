@@ -1,0 +1,9 @@
+{
+  "name": "PH biling - ISP Management System",
+  "description": "A comprehensive ISP billing and management platform featuring MikroTik integration, automated invoicing, WhatsApp notifications, and payment gateway simulation.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
