@@ -1,27 +1,27 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import App from './App.tsx';
 
-console.log("PH Biling: Entry point index.tsx initialized");
+console.debug("PH Biling: Memulai mounting DOM...");
 
-const rootElement = document.getElementById('root');
-if (!rootElement) {
-  console.error("FATAL: Could not find root element to mount to");
-  throw new Error("Could not find root element to mount to");
-}
+const rootEl = document.getElementById('root');
 
-try {
-  const root = ReactDOM.createRoot(rootElement);
-  root.render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  );
-  
-  // Beritahu index.html bahwa React sudah siap
-  (window as any).reactLoaded = true;
-  console.log("PH Biling: React successfully mounted");
-} catch (err) {
-  console.error("PH Biling: Render Error:", err);
+if (rootEl) {
+  try {
+    const root = ReactDOM.createRoot(rootEl);
+    root.render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
+    
+    // Memberi tahu loader bahwa aplikasi sudah siap
+    (window as any).reactLoaded = true;
+    console.debug("PH Biling: Hydration Sukses.");
+  } catch (err) {
+    console.error("PH Biling: Gagal melakukan render!", err);
+  }
+} else {
+  console.error("PH Biling: Elemen #root tidak ditemukan di index.html");
 }
